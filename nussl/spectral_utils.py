@@ -3,7 +3,6 @@
 
 from __future__ import division
 import numpy as np
-import matplotlib.pyplot as plt
 import scipy.fftpack as scifft
 import scipy.signal
 import os.path
@@ -70,6 +69,8 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
     nussl.plot_stft(x, 'path/to/sine_wav.png')
 
     """
+    import matplotlib.pyplot as plt
+
     sample_rate = constants.DEFAULT_SAMPLE_RATE if sample_rate is None else sample_rate
     freq_max = constants.MAX_FREQUENCY if freq_max is None else freq_max
 

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy import signal
 
 import nussl.spectral_utils as spectral_utils
@@ -373,6 +372,7 @@ class Duet(separation_base.SeparationBase):
             output_name (str): path to save plot as
             three_d_plot (Optional[bool]): Flags whether or not to plot in 3d. Defaults to False
         """
+        import matplotlib.pyplot as plt
         plt.close('all')
 
         AA = np.tile(self.a_grid[1::], (self.d_num, 1)).T

@@ -21,9 +21,8 @@ Required modules:
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
-
-plt.interactive('True')
+# import matplotlib.pyplot as plt
+# plt.interactive('True')
 import scipy.ndimage.filters
 import scipy
 from nussl.audio_signal import AudioSignal

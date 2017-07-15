@@ -34,9 +34,9 @@ try:
     from f_istft import f_istft
 except ImportError:
     from librosa import istft as f_istft
-import matplotlib.pyplot as plt
 
-plt.interactive('True')
+# import matplotlib.pyplot as plt
+# plt.interactive('True')
 
 
 def rpca_ss(x, fs, specparam=None, mask=False, maskgain=0):
