@@ -11,11 +11,15 @@ import audioread
 import json
 import warnings
 import copy
+import sys
 
-import spectral_utils
-import config
-import constants
-import utils
+import nussl.spectral_utils as spectral_utils
+import nussl.config as config
+import nussl.constants as constants
+import nussl.utils as utils
+
+if sys.version_info.major == 3:
+    unicode = str
 
 
 class AudioSignal(object):
@@ -122,7 +126,7 @@ class AudioSignal(object):
 
         if ch is None:
             if self.num_channels > 1:
-                for i in range(1, self.num_channels+1):
+                for i in range(1, self.num_channels + 1):
                     name = name_stem + '_ch{}.png'.format(i)
                     spectral_utils.plot_stft(self.get_channel(i), name,
                                              sample_rate=self.sample_rate)

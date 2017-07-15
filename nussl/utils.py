@@ -7,7 +7,7 @@ import numpy as np
 import warnings
 import base64
 import json
-import constants
+import nussl.constants as constants
 
 
 def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):

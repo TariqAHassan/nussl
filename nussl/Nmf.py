@@ -4,9 +4,9 @@ import random
 import math
 import numpy as np
 
-import separation_base
-import audio_signal
-import constants
+import nussl.separation_base as separation_base
+import nussl.audio_signal as audio_signal
+import nussl.constants as constants
 
 
 class NMF(separation_base.SeparationBase):
@@ -36,7 +36,7 @@ class NMF(separation_base.SeparationBase):
         if num_templates <= 0:
             raise Exception('Need more than 0 bases!')
 
-        self.stft = self.audio_signal.stft(overwrite=False) # V in literature
+        self.stft = self.audio_signal.stft(overwrite=False)  # V in literature
         self.num_templates = num_templates
 
         if self.stft.size <= 0:
@@ -230,7 +230,7 @@ class NMF(separation_base.SeparationBase):
         new_matrices = []
         for n in range(self.num_templates):
             matrix = np.empty_like(self.activation_matrix)
-            matrix[n, ] = self.activation_matrix[n, ]
+            matrix[n,] = self.activation_matrix[n,]
 
             new_stft = np.dot(self.templates, matrix)
             new_matrices.append(new_stft)

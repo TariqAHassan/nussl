@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import find_packages
-from imp import load_source
 import os
 import codecs
 import re
 
 try:
     from setuptools import setup
-except:
+except ImportError:
     from distutils.core import setup
 
 ######################################################

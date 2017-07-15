@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import audio_signal
-import spectral_utils
-import constants
-
 import copy
 import json
-import utils
 import numpy as np
 import inspect
+import sys
+
+import nussl.audio_signal as audio_signal
+import nussl.spectral_utils as spectral_utils
+import nussl.constants as constants
+import nussl.utils as utils
+
+if sys.version_info.major == 3:
+    basestring, unicode = str, str
 
 
 class SeparationBase(object):
@@ -160,7 +164,7 @@ class SeparationBaseDecoder(json.JSONDecoder):
             for k, v in json_dict.items():
                 if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
                     seperator.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
-                elif isinstance(v, basestring) and audio_signal.__name__ in v: # TODO: python3-ify this
+                elif isinstance(v, basestring) and audio_signal.__name__ in v:  # TODO: python3-ify this
                     seperator.__dict__[k] = audio_signal.AudioSignal.from_json(v)
                 else:
                     seperator.__dict__[k] = v if not isinstance(v, unicode) else v.encode('ascii')

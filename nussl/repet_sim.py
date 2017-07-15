@@ -3,12 +3,12 @@
 
 import numpy as np
 
-import spectral_utils
-import separation_base
-import constants
-import config
-from audio_signal import AudioSignal
-import utils
+import nussl.spectral_utils as spectral_utils
+import nussl.separation_base as separation_base
+import nussl.constants as constants
+import nussl.config as config
+from nussl.audio_signal import AudioSignal
+import nussl.utils as utils
 
 
 class RepetSim(separation_base.SeparationBase):

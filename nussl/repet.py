@@ -5,11 +5,11 @@ import numpy as np
 import scipy.fftpack as scifft
 import scipy.spatial.distance
 
-import spectral_utils
-import separation_base
-import constants
-import config
-from audio_signal import AudioSignal
+import nussl.spectral_utils as spectral_utils
+import nussl.separation_base as separation_base
+import nussl.constants as constants
+import nussl.config as config
+from nussl.audio_signal import AudioSignal
 
 
 class Repet(separation_base.SeparationBase):
@@ -53,6 +53,7 @@ class Repet(separation_base.SeparationBase):
         beat_spectrum (:obj:`np.array`): Beat spectrum calculated by Repet.
 
     """
+
     def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=None,
                  do_mono=False, use_find_period_complex=False, use_librosa_stft=config.USE_LIBROSA_STFT,
                  matlab_fidelity=False):
@@ -91,7 +92,6 @@ class Repet(separation_base.SeparationBase):
             if not self._is_period_converted_to_hops:
                 self.period = self._update_period(self.period)
                 self._is_period_converted_to_hops = True
-
 
     def run(self):
         """ Runs the original REPET algorithm
@@ -264,10 +264,10 @@ class Repet(separation_base.SeparationBase):
             auto_cosine[i] = 1 - scipy.spatial.distance.cosine(beat_spectrum[0:len(beat_spectrum) - i],
                                                                beat_spectrum[i:len(beat_spectrum)])
 
-        ac = auto_cosine[0:np.floor(auto_cosine.shape[0])/2]
+        ac = auto_cosine[0:np.floor(auto_cosine.shape[0]) / 2]
         auto_cosine = np.vstack([ac[1], ac, ac[-2]])
         auto_cosine_diff = np.ediff1d(auto_cosine)
-        sign_changes = auto_cosine_diff[0:-1]*auto_cosine_diff[1:]
+        sign_changes = auto_cosine_diff[0:-1] * auto_cosine_diff[1:]
         sign_changes = np.where(sign_changes < 0)[0]
 
         extrema_values = ac[sign_changes]

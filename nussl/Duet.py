@@ -3,14 +3,13 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
 
-import spectral_utils
-import separation_base
-import audio_signal
-import constants
-import utils
+import nussl.spectral_utils as spectral_utils
+import nussl.separation_base as separation_base
+import nussl.audio_signal as audio_signal
+import nussl.constants as constants
+import nussl.utils as utils
 
 
 class Duet(separation_base.SeparationBase):
@@ -164,7 +163,7 @@ class Duet(separation_base.SeparationBase):
 
         # find the location of peaks in the alpha-delta plane
         self.peak_indices = self.find_peaks2(hist, self.threshold,
-                                  np.array([self.a_min_distance, self.d_min_distance]), self.num_sources)
+                                             np.array([self.a_min_distance, self.d_min_distance]), self.num_sources)
 
         alphapeak = agrid[self.peak_indices[0, :]]
         deltapeak = dgrid[self.peak_indices[1, :]]
@@ -178,7 +177,8 @@ class Duet(separation_base.SeparationBase):
         bestsofar = np.inf * np.ones((num_frequency_bins - 1, num_time_bins))
         bestind = np.zeros((num_frequency_bins - 1, num_time_bins), int)
         for i in range(0, self.num_sources):
-            score = np.abs(atnpeak[i] * np.exp(-1j * wmat * deltapeak[i]) * stft_ch0 - stft_ch1) ** 2 / (1 + atnpeak[i] ** 2)
+            score = np.abs(atnpeak[i] * np.exp(-1j * wmat * deltapeak[i]) * stft_ch0 - stft_ch1) ** 2 / (
+            1 + atnpeak[i] ** 2)
             mask = (score < bestsofar)
             bestind[mask] = i
             bestsofar[mask] = score[mask]
@@ -188,11 +188,12 @@ class Duet(separation_base.SeparationBase):
         for i in range(0, self.num_sources):
             mask = (bestind == i)
             Xm = np.vstack([np.zeros((1, num_time_bins)),
-                            (stft_ch0 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * stft_ch1) / (1 + atnpeak[i] ** 2) * mask])
+                            (stft_ch0 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * stft_ch1) / (
+                            1 + atnpeak[i] ** 2) * mask])
             # xi = spectral_utils.f_istft(Xm, L, winType, hop, fs)
             xi = spectral_utils.e_istft(Xm, L, hop, winType)
 
-            xhat[i, :] = utils.add_mismatched_arrays(xhat[i, ], xi)[:self.audio_signal.signal_length]
+            xhat[i, :] = utils.add_mismatched_arrays(xhat[i,], xi)[:self.audio_signal.signal_length]
             # add back to the separated signal a portion of the mixture to eliminate
             # most of the masking artifacts
             # xhat=xhat+0.05*x[0,:]

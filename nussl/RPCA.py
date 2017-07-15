@@ -24,13 +24,22 @@ Required modules:
 
 """
 
-import numpy as np 
-from f_stft import f_stft
-from f_istft import f_istft
+import numpy as np
+
+try:
+    from f_stft import f_stft  # not clear where this resides...
+except ImportError:
+    from librosa import stft as f_stft
+try:
+    from f_istft import f_istft
+except ImportError:
+    from librosa import istft as f_istft
 import matplotlib.pyplot as plt
+
 plt.interactive('True')
 
-def rpca_ss(x,fs,specparam=None,mask=False,maskgain=0):
+
+def rpca_ss(x, fs, specparam=None, mask=False, maskgain=0):
     """
     The function rpca_ss uses the RPCA method to decompose the power spectral 
     density of a mixture into its background (assumed to be low-rank) and 
@@ -64,75 +73,73 @@ def rpca_ss(x,fs,specparam=None,mask=False,maskgain=0):
     EXAMPLE:
      
     """
-    
+
     # use the default range of repeating period and default do_STFT parameter values
     # if not specified
     if specparam is None:
-       winlength=int(2**(np.ceil(np.log2(0.04*fs)))) # next power 2 of 40ms*fs
-       specparam = [winlength,'Hamming',winlength/2,winlength]
-   
-   # do_STFT parameters
-    winL,win,ovp,nfft=specparam 
-    
+        winlength = int(2 ** (np.ceil(np.log2(0.04 * fs))))  # next power 2 of 40ms*fs
+        specparam = [winlength, 'Hamming', winlength / 2, winlength]
+
+        # do_STFT parameters
+    winL, win, ovp, nfft = specparam
+
     # compute the spectrograms of all channels
-    M,N = np.shape(x)
-    X=f_stft(np.array(x[0,:],ndmin=2),winL,win,ovp,fs,nfft,0)[0]
-    for i in range(1,M):
-         Sx = f_stft(np.mat(x[i,:]),winL,win,ovp,fs,nfft,0)[0]
-         X=np.dstack([X,Sx])
-         
-    MagX=np.abs(X)  # magnitude spectrogram
-    PhX=np.angle(X) # phase of the spectrogram
-    if M==1: 
-        X=X[:,:,np.newaxis]
-        MagX=MagX[:,:,np.newaxis]
-        PhX=PhX[:,:,np.newaxis]
-    
+    M, N = np.shape(x)
+    X = f_stft(np.array(x[0, :], ndmin=2), winL, win, ovp, fs, nfft, 0)[0]
+    for i in range(1, M):
+        Sx = f_stft(np.mat(x[i, :]), winL, win, ovp, fs, nfft, 0)[0]
+        X = np.dstack([X, Sx])
+
+    MagX = np.abs(X)  # magnitude spectrogram
+    PhX = np.angle(X)  # phase of the spectrogram
+    if M == 1:
+        X = X[:, :, np.newaxis]
+        MagX = MagX[:, :, np.newaxis]
+        PhX = PhX[:, :, np.newaxis]
+
     # decompose the magnitude spectrogram 
-    L=1j*np.zeros((MagX.shape))
-    S=1j*np.zeros((MagX.shape))
-    for i in range(0,M):
-        Li,Si = rpca(MagX[:,:,i])[0:2] # decompose the magnitude spectrogram
-        L[:,:,i]=Li*np.exp(1j*PhX[:,:,i]) # append the phase of X to low-rank part
-        S[:,:,i]=Si*np.exp(1j*PhX[:,:,i]) # append the phase of X to sparse part
-    
-    
+    L = 1j * np.zeros((MagX.shape))
+    S = 1j * np.zeros((MagX.shape))
+    for i in range(0, M):
+        Li, Si = rpca(MagX[:, :, i])[0:2]  # decompose the magnitude spectrogram
+        L[:, :, i] = Li * np.exp(1j * PhX[:, :, i])  # append the phase of X to low-rank part
+        S[:, :, i] = Si * np.exp(1j * PhX[:, :, i])  # append the phase of X to sparse part
+
     # compute the masks (using rpca) if specified    
-    
-    if mask==True:
-        Mask=np.zeros((MagX.shape))     
-        for i in range(0,M):
-            Li=L[:,:,i]
-            Si=S[:,:,i]
-            
-            MaskTemp=np.zeros((Li.shape))
-            M_region=np.abs(Si)>maskgain*np.abs(Li) # find bins for which |Si|>gain*|Li|      
-            MaskTemp[M_region]=1  # set the mask gain over the found region to one       
-            Mask[:,:,i]=MaskTemp 
-        
-    # compute the separated sources
-       
-    yF=np.zeros((M,N)) # separated foreground
-    yB=np.zeros((M,N)) # separated background   
-    for i in range(0,M):    
-       if mask == True:  
-         XF=X[:,:,i]*Mask[:,:,i]
-         XB=X[:,:,i]*(1-Mask[:,:,i])
-       elif mask == False:
-         XF=S[:,:,i]
-         XB=L[:,:,i]
-       
-       yFi=f_istft(XF,winL,win,ovp,fs)[0]
-       yF[i,:]=yFi[0:N]       
-       
-       yBi=f_istft(XB,winL,win,ovp,fs)[0]
-       yB[i,:]=yBi[0:N] 
-    
-    
-    return yF,yB
+
+    if mask == True:
+        Mask = np.zeros((MagX.shape))
+        for i in range(0, M):
+            Li = L[:, :, i]
+            Si = S[:, :, i]
+
+            MaskTemp = np.zeros((Li.shape))
+            M_region = np.abs(Si) > maskgain * np.abs(Li)  # find bins for which |Si|>gain*|Li|
+            MaskTemp[M_region] = 1  # set the mask gain over the found region to one
+            Mask[:, :, i] = MaskTemp
+
+            # compute the separated sources
+
+    yF = np.zeros((M, N))  # separated foreground
+    yB = np.zeros((M, N))  # separated background
+    for i in range(0, M):
+        if mask == True:
+            XF = X[:, :, i] * Mask[:, :, i]
+            XB = X[:, :, i] * (1 - Mask[:, :, i])
+        elif mask == False:
+            XF = S[:, :, i]
+            XB = L[:, :, i]
+
+        yFi = f_istft(XF, winL, win, ovp, fs)[0]
+        yF[i, :] = yFi[0:N]
+
+        yBi = f_istft(XB, winL, win, ovp, fs)[0]
+        yB[i, :] = yBi[0:N]
+
+    return yF, yB
 
 
-def rpca(M,delta=1e-7,maxit=100):
+def rpca(M, delta=1e-7, maxit=100):
     """
     The function rpca implements the Robust Principle Component Analysis (RPCA) 
     method to decompose a matrix into its low rank and sparse components. 
@@ -150,63 +157,63 @@ def rpca(M,delta=1e-7,maxit=100):
     S: Numpy n by m array containing the elements of the sparse part 
     
     """
-    
+
     # compute the dimensions of the input matrix, M
-    n,m=np.shape(M)    
-    
+    n, m = np.shape(M)
+
     # compute the (rule of thumb) velues of the lagrange multiplyer and the 
     # svd-threshold 
-    Lambda = 1/np.sqrt(np.max([n,m]))
-    #mu = (n*m)/(4. * np.linalg.norm(M,ord=1)) 
-        
+    Lambda = 1 / np.sqrt(np.max([n, m]))
+    # mu = (n*m)/(4. * np.linalg.norm(M,ord=1))
+
     # initialize the low-rank matrix,L, sparse matrix,S, and the matrix of 
     # residuals, Y
-    
-    L=np.zeros((n,m))
-    S=np.zeros((n,m))
-    #Y=np.zeros((n,m))
-    
-    norm_two= np.linalg.svd(M, full_matrices=False,compute_uv=False)[0] 
-    norm_inf=np.abs(M).max()/Lambda
-    dual_norm=np.max([norm_two,norm_inf])
-    Y=M/dual_norm
-    
+
+    L = np.zeros((n, m))
+    S = np.zeros((n, m))
+    # Y=np.zeros((n,m))
+
+    norm_two = np.linalg.svd(M, full_matrices=False, compute_uv=False)[0]
+    norm_inf = np.abs(M).max() / Lambda
+    dual_norm = np.max([norm_two, norm_inf])
+    Y = M / dual_norm
+
     # tunable parameters #########################
-    mu=1.25/norm_two
+    mu = 1.25 / norm_two
     print(mu)
-    mu_bar=mu*1e7
-    rho=1.5
-              
+    mu_bar = mu * 1e7
+    rho = 1.5
+
     # initialize the error value (loop condition)
-    Etemp=1           
-    #Etemp = np.linalg.norm(M - L - S,ord='fro') / np.linalg.norm(M,ord='fro')
-    Error=np.array([],ndmin=2)
-    
-    converged=False
-    It=0
-    while converged==False: 
-        It=It+1
-        
-        L = svd_thr(M - S + Y/mu,1/mu)
-        S = shrink(M - L + Y/mu, Lambda/mu)
-        Y = Y + mu*(M - L - S)
-        
-        mu=np.min([mu*rho,mu_bar])        ######################## 
+    Etemp = 1
+    # Etemp = np.linalg.norm(M - L - S,ord='fro') / np.linalg.norm(M,ord='fro')
+    Error = np.array([], ndmin=2)
+
+    converged = False
+    It = 0
+    while converged == False:
+        It = It + 1
+
+        L = svd_thr(M - S + Y / mu, 1 / mu)
+        S = shrink(M - L + Y / mu, Lambda / mu)
+        Y = Y + mu * (M - L - S)
+
+        mu = np.min([mu * rho, mu_bar])  ########################
         print(mu)
-        
-        Etemp = np.linalg.norm(M - L - S,ord='fro') / np.linalg.norm(M,ord='fro')
-        Error=np.hstack([Error,np.array(Etemp,ndmin=2)])
-        
-        if Etemp<delta:
-            converged=True
-        if converged==False and It>=maxit:
+
+        Etemp = np.linalg.norm(M - L - S, ord='fro') / np.linalg.norm(M, ord='fro')
+        Error = np.hstack([Error, np.array(Etemp, ndmin=2)])
+
+        if Etemp < delta:
+            converged = True
+        if converged == False and It >= maxit:
             print('Maximum iteration reached')
-            converged=True
-    
-    return L,S,Error
-    
- 
-def shrink(X,tau):
+            converged = True
+
+    return L, S, Error
+
+
+def shrink(X, tau):
     """
     The function shrink applies the shrinkage operator to the input matrix and
     computes the output according to: S_tau = shrink(Xij) = sgn(Xij)max(abs(Xij)-tau,0).
@@ -219,13 +226,13 @@ def shrink(X,tau):
     Output:
     S_tau: Numpy n by m array containing the elements of the shrinked matrix
     """
-    
-    S_tau = np.sign(X)*np.maximum(np.abs(X)-tau,0)
-        
+
+    S_tau = np.sign(X) * np.maximum(np.abs(X) - tau, 0)
+
     return S_tau
-    
-    
-def svd_thr(X,tau):
+
+
+def svd_thr(X, tau):
     """
     The function svd_thr applies the singular value thresholding operator to 
     the input matrix and computes the output according to: 
@@ -239,16 +246,16 @@ def svd_thr(X,tau):
     Output: 
     D_tau: Numpy n by m array containing elements of the matrix composed of 
            thresholded singular values
-    """    
-    
-    U,sigma,V = np.linalg.svd(X, full_matrices=False) # truncated svd
-    S_tau = shrink(sigma,tau)
+    """
+
+    U, sigma, V = np.linalg.svd(X, full_matrices=False)  # truncated svd
+    S_tau = shrink(sigma, tau)
     D_tau = np.dot(U, np.dot(np.diag(S_tau), V))
-        
+
     return D_tau
-    
-    
-def rd_svd(X,k):
+
+
+def rd_svd(X, k):
     """
     The function rd_svd computes the matrix composed of a few largest components
     of the input matrix.
@@ -260,21 +267,11 @@ def rd_svd(X,k):
     Output:
     Xrd: reduced rank matrix composed of k largest components    
     """
-    
-    U,sigma,V = np.linalg.svd(X, full_matrices=False) # truncated svd
-    S_rd=sigma[0:k]
-    U_rd=U[:,0:k]
-    V_rd=V[0:k,:]
-    X_rd=np.dot(U_rd,np.dot(np.diag(S_rd),V_rd))
-    
-    return X_rd   
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+    U, sigma, V = np.linalg.svd(X, full_matrices=False)  # truncated svd
+    S_rd = sigma[0:k]
+    U_rd = U[:, 0:k]
+    V_rd = V[0:k, :]
+    X_rd = np.dot(U_rd, np.dot(np.diag(S_rd), V_rd))
+
+    return X_rd

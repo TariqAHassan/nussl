@@ -10,8 +10,12 @@ import os.path
 import librosa
 import json
 import warnings
+import sys
 
-import constants
+import nussl.constants as constants
+
+if sys.version_info.major == 3:
+    unicode = str
 
 
 def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
@@ -188,7 +192,7 @@ def e_stft(signal, window_length, hop_length, window_type,
         unwindowed_signal = signal[start:end]
         windowed_signal = np.multiply(unwindowed_signal, window)
         fft = scifft.fft(windowed_signal, n=n_fft_bins)
-        stft[hop, ] = fft[:stft_bins]
+        stft[hop,] = fft[:stft_bins]
 
     # reshape the 2d array, so it's (n_fft, n_hops).
     stft = stft.T
@@ -506,6 +510,7 @@ class StftParams(object):
     all of the separation algorithms are built upon.
     This object will get passed around instead of each of these individual attributes.
     """
+
     def __init__(self, sample_rate, window_length=None, hop_length=None, window_type=None, n_fft_bins=None):
         self.sample_rate = int(sample_rate)
 
