@@ -1,4 +1,5 @@
 # In this demo the KAM algorithm is tested
+from __future__ import print_function
 
 import matplotlib.pyplot as plt
 
@@ -58,7 +59,7 @@ Numit = 2
 # call the kam function and record the running time
 start_time = time.clock()
 shat, fhat = kaml(Inputfile, SourceKernels, AlgParams, Numit, SpecParams)[0:2]
-print time.clock() - start_time, "seconds"
+print(time.clock() - start_time, "seconds")
 
 # record separated sources in .wav files
 ss1 = AudioSignal(audiosig=shat[:, :, 0], fs=fs)
@@ -95,8 +96,6 @@ plt.title(r'$\hat{f}_2$')
 plt.axis('tight')
 plt.ylim(sig.Fvec[0], 5000)
 
-
-
 # Example (2): Test with a mixture of music and speech
 #              The mixture is composed of flute, kick drum and female voice
 # Note: the second examples takes much longer to run than the first example
@@ -128,7 +127,6 @@ plt.subplot(212)
 src2.do_STFT()
 plt.title('Flute')
 
-
 # generate spectrograms of the mixture
 mix1 = AudioSignal('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav', 10)
 mix1.windowlength = WinL
@@ -140,7 +138,6 @@ mix1.fmaxplot = 5000
 plt.figure(4)
 mix1.do_STFT()
 plt.title('Mixture')
-
 
 # inputs of the 'kam' function
 FileName = '/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav'
@@ -172,14 +169,14 @@ Numit = 5
 # call the kam function and record the running time
 start_time = time.clock()
 shat, fhat = kaml(Inputfile, SourceKernels, AlgParams, Numit, SpecParams)[0:2]
-print time.clock() - start_time, "seconds"
+print(time.clock() - start_time, "seconds")
 
 for numblock in range(1, NB):
     Inputfile = [FileName, BlockLen, BlockLen * numblock]
     shat_temp, fhat_temp = kaml(Inputfile, SourceKernels, AlgParams, Numit, SpecParams)[0:2]
     shat = np.append(shat, shat_temp, axis=0)
     fhat = np.append(fhat, fhat_temp, axis=1)
-print time.clock() - start_time, "seconds"
+print(time.clock() - start_time, "seconds")
 
 # play the separated sources
 ss1 = AudioSignal(audiosig=shat[:, :, 0], fs=fs)

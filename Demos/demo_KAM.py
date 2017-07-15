@@ -1,4 +1,5 @@
 # In this demo the KAM algorithm is tested
+from __future__ import print_function
 
 import matplotlib.pyplot as plt
 
@@ -57,7 +58,7 @@ Numit = 2
 # call the kam function and record the running time
 start_time = time.clock()
 shat, fhat = kam(Inputfile, SourceKernels, Numit, SpecParams)[0:2]
-print time.clock() - start_time, "seconds"
+print(time.clock() - start_time, "seconds")
 
 # record separated sources in .wav files
 ss1 = AudioSignal(audiosig=shat[:, :, 0], fs=fs)
@@ -171,14 +172,14 @@ Numit = 5
 # call the kam function and record the running time
 start_time = time.clock()
 shat, fhat = kam(Inputfile, SourceKernels, Numit, SpecParams)[0:2]
-print time.clock() - start_time, "seconds"
+print(time.clock() - start_time, "seconds")
 
 for numblock in range(1, NB):
     Inputfile = [FileName, BlockLen, BlockLen * numblock]
     shat_temp, fhat_temp = kam(Inputfile, SourceKernels, Numit, SpecParams)[0:2]
     shat = np.append(shat, shat_temp, axis=0)
     fhat = np.append(fhat, fhat_temp, axis=1)
-print time.clock() - start_time, "seconds"
+print(time.clock() - start_time, "seconds")
 
 # write the separated sources
 ss1 = AudioSignal(audiosig=shat[:, :, 0], fs=fs)
